@@ -6,9 +6,7 @@
 
 body {
     background-color: #f0e6d2;
-    /* Fallback color */
     background-image: url('scroll_paper.png');
-    /* Use paper texture for body background too, maybe darker/tinted */
     background-size: cover;
     background-blend-mode: multiply;
     height: 100vh;
@@ -16,8 +14,7 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
-    /* Traditional Chinese font style */
+    font-family: "Kaiti SC", "STKaiti", "KaiTi", "SimSun", serif;
 }
 
 .main-container {
@@ -32,185 +29,267 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 300px;
-    /* Height of the scroll */
+    height: 70vh;
     cursor: pointer;
     transition: all 1.5s ease-in-out;
 }
 
 /* Handles */
 .scroll-handle {
-    width: 40px;
-    height: 340px;
-    /* Slightly taller than content */
+    width: 30px;
+    height: calc(70vh + 40px);
     background-image: url('handle_texture.png');
     background-size: cover;
-    border-radius: 20px;
+    border-radius: 15px;
     box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
     z-index: 10;
     position: relative;
+    flex-shrink: 0;
 }
 
 .left-handle {
-    margin-right: -10px;
-    /* Overlap slightly with content */
+    margin-right: -8px;
 }
 
 .right-handle {
-    margin-left: -10px;
-    /* Overlap slightly with content */
+    margin-left: -8px;
 }
 
 /* Content Area */
 .scroll-content {
-    height: 300px;
+    height: 70vh;
     width: 0;
-    /* Initially closed */
-    background-image: url('scroll_paper.png');
-    background-size: cover;
-    overflow-x: auto;
-    /* Enable horizontal scrolling */
-    overflow-y: hidden;
+    overflow: hidden;
     position: relative;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
-    transition: width 2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
-    /* Smooth easing */
-    /* Hide scrollbar */
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE 10+ */
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+    transition: width 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.scroll-content::-webkit-scrollbar {
-    display: none;
-    /* Chrome/Safari */
-}
-
-.inner-content {
-    width: auto;
-    /* Allow content to dictate width */
-    min-width: 800px;
-    /* Minimum width */
+/* 长图容器 */
+.scroll-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
+    width: auto;
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    /* Align to start for scrolling */
-    position: relative;
-    opacity: 0;
-    transition: opacity 1s ease 0.5s;
-    /* Fade in after scroll starts opening */
-    padding: 0 50px;
-    /* Add padding */
 }
 
 .scroll-image {
-    height: 80%;
+    height: 100%;
     width: auto;
-    /* Maintain aspect ratio */
-    max-width: none;
-    /* Allow it to be very wide */
-    border: 2px solid #8b4513;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: block;
 }
 
+/* 诗歌覆盖层 */
 .poem-overlay {
     position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* 诗歌容器 */
+.poem-container {
+    position: absolute;
     top: 20px;
-    right: 30px;
-    /* Position relative to the start of the scroll */
+    left: 25px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    height: calc(100% - 40px);
+    gap: 12px;
+}
+
+/* 诗歌列 - 水墨风格 */
+.poem-column {
     writing-mode: vertical-rl;
-    text-orientation: upright;
-    color: #333;
-    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
-    background-color: rgba(255, 255, 255, 0.6);
-    padding: 10px;
-    border-radius: 5px;
+    text-orientation: mixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 2s ease, transform 2s ease, margin-left 2s ease;
+    flex-shrink: 0;
+    margin-left: 0;
 }
 
-.poem-overlay h1 {
-    font-size: 2rem;
-    margin-left: 10px;
-    color: #8b0000;
-    /* Dark red */
-    border-left: 2px solid #8b0000;
-    padding-left: 10px;
+/* 文字从右边淡入 */
+.poem-column.visible {
+    opacity: 1;
+    transform: translateX(0);
 }
 
-.poem-overlay p {
-    font-size: 1.2rem;
+/* 文字向左缓缓滑出消失 */
+.poem-column.fading {
+    opacity: 0;
+    transform: translateX(-80px);
+    margin-left: -60px;
+    transition: opacity 3s ease, transform 3s ease, margin-left 3s ease;
+}
+
+/* 水墨风格诗句 - 无背景 */
+.poem-verse {
+    font-size: 2.2rem;
+    color: #1a1a1a;
+    letter-spacing: 0.4em;
+    text-shadow: 
+        2px 2px 4px rgba(255, 255, 255, 0.9),
+        -1px -1px 2px rgba(255, 255, 255, 0.8),
+        3px 3px 6px rgba(0, 0, 0, 0.15);
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* 标题样式 - 水墨风格 */
+.poem-title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #8B0000;
+    letter-spacing: 0.5em;
+    text-shadow: 
+        3px 3px 6px rgba(255, 255, 255, 0.95),
+        -2px -2px 4px rgba(255, 255, 255, 0.9),
+        4px 4px 8px rgba(139, 0, 0, 0.2);
+    margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+/* 作者 */
+.poem-author {
+    font-size: 1.4rem;
+    color: #4a4a4a;
+    letter-spacing: 0.3em;
+    text-shadow: 
+        2px 2px 4px rgba(255, 255, 255, 0.9),
+        -1px -1px 2px rgba(255, 255, 255, 0.8);
+    margin-top: 15px;
+    white-space: nowrap;
+}
+
+/* 间隔 */
+.poem-spacer {
+    width: 30px;
+    flex-shrink: 0;
+    transition: width 2s ease, margin 2s ease;
+}
+
+/* 标题列特殊处理 - 不消失 */
+.title-column {
+    gap: 10px;
 }
 
 /* Open State */
 .scroll-wrapper.open .scroll-content {
-    width: 90vw;
-    /* Expand to most of the viewport width */
-    max-width: 1200px;
-    /* Cap width on large screens */
-}
-
-.scroll-wrapper.open .inner-content {
-    opacity: 1;
+    width: 85vw;
 }
 
 .instruction-text {
-    margin-top: 50px;
-    font-size: 1.2rem;
+    margin-top: 30px;
+    font-size: 1rem;
     color: #555;
     animation: pulse 2s infinite;
     pointer-events: none;
 }
 
-.scroll-wrapper.open+.instruction-text {
+.scroll-wrapper.open + .instruction-text {
     opacity: 0;
     transition: opacity 0.5s;
 }
 
 @keyframes pulse {
-    0% {
-        opacity: 0.6;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.6;
-    }
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
-/* Mobile Landscape Optimization */
-@media (max-width: 768px) {
+/* Mobile Portrait */
+@media (max-width: 480px) and (orientation: portrait) {
     .scroll-wrapper {
-        height: 200px;
+        height: 55vh;
     }
 
     .scroll-handle {
-        height: 240px;
-        width: 30px;
+        width: 25px;
+        height: calc(55vh + 30px);
     }
 
     .scroll-content {
-        height: 200px;
+        height: 55vh;
     }
 
     .scroll-wrapper.open .scroll-content {
         width: 90vw;
     }
 
-    .poem-overlay h1 {
-        font-size: 1.5rem;
+    .poem-verse {
+        font-size: 1.6rem;
     }
 
-    .poem-overlay p {
-        font-size: 1rem;
+    .poem-title {
+        font-size: 2.2rem;
     }
 
-    /* Hint to rotate */
-    .instruction-text::after {
-        content: " (请横屏观看体验更佳)";
+    .poem-author {
+        font-size: 1.1rem;
+    }
+
+    .poem-container {
+        gap: 8px;
+        left: 15px;
+    }
+}
+
+/* Mobile Landscape */
+@media (max-width: 900px) and (orientation: landscape) {
+    .scroll-wrapper {
+        height: 80vh;
+    }
+
+    .scroll-handle {
+        height: calc(80vh + 30px);
+        width: 28px;
+    }
+
+    .scroll-content {
+        height: 80vh;
+    }
+
+    .scroll-wrapper.open .scroll-content {
+        width: 88vw;
+    }
+
+    .poem-verse {
+        font-size: 1.8rem;
+    }
+
+    .poem-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* 小屏幕 */
+@media (max-height: 500px) {
+    .scroll-wrapper {
+        height: 75vh;
+    }
+
+    .scroll-handle {
+        height: calc(75vh + 25px);
+    }
+
+    .scroll-content {
+        height: 75vh;
+    }
+
+    .instruction-text {
+        margin-top: 15px;
         font-size: 0.9rem;
     }
 }
