@@ -17,11 +17,121 @@ body {
     font-family: "Kaiti SC", "STKaiti", "KaiTi", "SimSun", serif;
 }
 
+/* ========== 加载遮罩 ========== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f5e6c8 0%, #e8d4a8 50%, #d4c090 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 1s ease, visibility 1s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+/* 加载动画 - 卷轴图标 */
+.loading-scroll {
+    width: 60px;
+    height: 120px;
+    margin: 0 auto 20px;
+    background: linear-gradient(to bottom, #8B4513 0%, #654321 50%, #8B4513 100%);
+    border-radius: 10px;
+    position: relative;
+    animation: scrollPulse 1.5s ease-in-out infinite;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.loading-scroll::before,
+.loading-scroll::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 15px;
+    background: linear-gradient(to bottom, #D4AF37 0%, #B8860B 50%, #D4AF37 100%);
+    border-radius: 5px;
+}
+
+.loading-scroll::before {
+    top: -5px;
+}
+
+.loading-scroll::after {
+    bottom: -5px;
+}
+
+@keyframes scrollPulse {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(0.95);
+    }
+}
+
+.loading-text {
+    font-size: 1.4rem;
+    color: #654321;
+    margin-bottom: 20px;
+    letter-spacing: 0.2em;
+    animation: textFade 2s ease-in-out infinite;
+}
+
+@keyframes textFade {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* 进度条 */
+.loading-progress {
+    width: 200px;
+    height: 6px;
+    background: rgba(101, 67, 33, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.loading-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #8B4513, #D4AF37, #8B4513);
+    background-size: 200% 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========== 主容器 ========== */
 .main-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.main-container.loaded {
+    opacity: 1;
 }
 
 .scroll-wrapper {
@@ -55,7 +165,7 @@ body {
     margin-left: -8px;
 }
 
-/* Content Area */
+/* Content Area - 修复白边 */
 .scroll-content {
     height: 70vh;
     width: 0;
@@ -63,22 +173,27 @@ body {
     position: relative;
     box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
     transition: width 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: url('image.png') left center / auto 100% no-repeat;
+    background-color: #e5d5b8;
 }
 
 /* 长图容器 */
 .scroll-image-container {
     position: absolute;
-    top: 0;
+    top: -2px;  /* 轻微偏移消除边缘 */
     left: 0;
-    height: 100%;
+    height: calc(100% + 4px); /* 稍微超出容器 */
     width: auto;
     display: flex;
+    align-items: center;
 }
 
 .scroll-image {
     height: 100%;
     width: auto;
     display: block;
+    margin: 0;
+    padding: 0;
 }
 
 /* 诗歌覆盖层 */
@@ -180,7 +295,7 @@ body {
     transition: width 2s ease, margin 2s ease;
 }
 
-/* 标题列特殊处理 - 不消失 */
+/* 标题列特殊处理 */
 .title-column {
     gap: 10px;
 }
@@ -243,6 +358,19 @@ body {
     .poem-container {
         gap: 8px;
         left: 15px;
+    }
+
+    .loading-scroll {
+        width: 50px;
+        height: 100px;
+    }
+
+    .loading-text {
+        font-size: 1.2rem;
+    }
+
+    .loading-progress {
+        width: 160px;
     }
 }
 

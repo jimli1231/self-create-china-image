@@ -9,7 +9,18 @@
 </head>
 
 <body>
-    <div class="main-container">
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-scroll"></div>
+            <p class="loading-text">卷軸載入中...</p>
+            <div class="loading-progress">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
         <div class="scroll-wrapper" id="scrollWrapper">
             <div class="scroll-handle left-handle"></div>
             <div class="scroll-content" id="scrollContent">
@@ -20,7 +31,7 @@
                 <!-- 诗歌覆盖层 -->
                 <div class="poem-overlay">
                     <div class="poem-container" id="poemContainer">
-                        <!-- 长诗 - 从左到右依次显示，最后是标题 -->
+                        <!-- 长诗 -->
                         <div class="poem-column" data-delay="0"><span class="poem-verse">汴京城外春色好</span></div>
                         <div class="poem-column" data-delay="1"><span class="poem-verse">虹橋兩岸人如潮</span></div>
                         <div class="poem-column" data-delay="2"><span class="poem-verse">舟楫往來穿碧水</span></div>
