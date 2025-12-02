@@ -19,70 +19,103 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let loadedCount = 0;
     const totalResources = resources.images.length + resources.audio.length;
-    let isInitialized = false; // 防止重复初始化
+    let isInitialized = false;
     
+    // 更新进度条
     function updateProgress() {
         loadedCount++;
         const progress = (loadedCount / totalResources) * 100;
         loadingBar.style.width = progress + '%';
         
+        console.log(`加载进度: ${loadedCount}/${totalResources} (${progress.toFixed(0)}%)`);
+        
         if (loadedCount >= totalResources && !isInitialized) {
-            // 所有资源加载完成
-            isInitialized = true;
-            setTimeout(() => {
-                loadingOverlay.classList.add('hidden');
-                mainContainer.classList.add('loaded');
-                initScrollApp();
-            }, 500);
+            onAllResourcesLoaded();
         }
     }
     
-    function loadImage(src) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                updateProgress();
-                resolve();
-            };
-            img.onerror = () => {
-                console.log('Image load failed:', src);
-                updateProgress(); // 即使失败也继续
-                resolve();
-            };
-            img.src = src;
-        });
-    }
-    
-    function loadAudio(src) {
-        return new Promise((resolve) => {
-            const audio = new Audio();
-            audio.oncanplaythrough = () => {
-                updateProgress();
-                resolve();
-            };
-            audio.onerror = () => {
-                console.log('Audio load failed:', src);
-                updateProgress(); // 即使失败也继续
-                resolve();
-            };
-            audio.src = src;
-            audio.load();
-        });
-    }
-    
-    // 开始预加载
-    resources.images.forEach(src => loadImage(src));
-    resources.audio.forEach(src => loadAudio(src));
-    
-    // 超时保护：10秒后强制显示
-    setTimeout(() => {
-        if (!isInitialized) {
-            isInitialized = true;
+    // 所有资源加载完成
+    function onAllResourcesLoaded() {
+        if (isInitialized) return;
+        isInitialized = true;
+        
+        console.log('所有资源加载完成，显示卷轴');
+        
+        setTimeout(() => {
             loadingOverlay.classList.add('hidden');
             mainContainer.classList.add('loaded');
             initScrollApp();
+        }, 500);
+    }
+    
+    // 加载图片
+    function loadImage(src) {
+        const img = new Image();
+        
+        img.onload = () => {
+            console.log('图片加载成功:', src);
+            updateProgress();
+        };
+        
+        img.onerror = () => {
+            console.warn('图片加载失败:', src);
+            updateProgress(); // 失败也继续
+        };
+        
+        img.src = src;
+    }
+    
+    // 加载音频 - 使用多种事件确保触发
+    function loadAudio(src) {
+        const audio = new Audio();
+        let loaded = false;
+        
+        const markLoaded = () => {
+            if (!loaded) {
+                loaded = true;
+                console.log('音频加载成功:', src);
+                updateProgress();
+            }
+        };
+        
+        // 多个事件监听，确保至少一个触发
+        audio.oncanplaythrough = markLoaded;
+        audio.onloadeddata = markLoaded;
+        audio.oncanplay = markLoaded;
+        
+        audio.onerror = () => {
+            if (!loaded) {
+                loaded = true;
+                console.warn('音频加载失败:', src);
+                updateProgress();
+            }
+        };
+        
+        // 超时保护：单个音频3秒后强制标记完成
+        setTimeout(() => {
+            if (!loaded) {
+                loaded = true;
+                console.warn('音频加载超时:', src);
+                updateProgress();
+            }
+        }, 3000);
+        
+        audio.src = src;
+        audio.load();
+    }
+    
+    // 开始预加载所有资源
+    console.log('开始预加载资源...');
+    resources.images.forEach(src => loadImage(src));
+    resources.audio.forEach(src => loadAudio(src));
+    
+    // 总超时保护：8秒后强制显示
+    setTimeout(() => {
+        if (!isInitialized) {
+            console.warn('预加载超时，强制显示');
+            onAllResourcesLoaded();
         }
-    }, 10000);
+    }, 8000);
     
     // ========== 卷轴应用逻辑 ==========
     function initScrollApp() {
@@ -101,10 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let scaledImageWidth = 0;
         let poemTimeouts = [];
 
-        // 总动画时长（秒）
         const TOTAL_DURATION = 60;
         
-        // 图片加载处理
         function handleImageLoad() {
             if (scrollImage.naturalWidth > 0 && scrollImage.naturalHeight > 0) {
                 imageLoaded = true;
@@ -112,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 更新图片尺寸
         function updateImageSize() {
             if (!imageLoaded) return;
             
@@ -125,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollImage.style.width = scaledImageWidth + 'px';
         }
 
-        // 检查图片是否已加载
         if (scrollImage.complete && scrollImage.naturalWidth > 0) {
             handleImageLoad();
         } else {
@@ -134,11 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         scrollWrapper.addEventListener('click', () => {
             if (!isOpen) {
-                // 打开卷轴
                 scrollWrapper.classList.add('open');
                 isOpen = true;
 
-                // 先播放开卷音效
                 if (openSound) {
                     openSound.volume = 0.8;
                     openSound.currentTime = 0;
@@ -146,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log("Open sound play failed:", error);
                     });
                     
-                    // 开卷音效结束后播放背景音乐
                     openSound.onended = () => {
                         if (bgm && isOpen) {
                             bgm.volume = 0.5;
@@ -156,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     };
                     
-                    // 备用：3秒后开始播放背景音乐
                     setTimeout(() => {
                         if (bgm && isOpen && bgm.paused) {
                             bgm.volume = 0.5;
@@ -172,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // 等待卷轴展开后开始动画
                 setTimeout(() => {
                     updateImageSize();
                     startImageScroll();
@@ -180,11 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 2800);
 
             } else {
-                // 关闭卷轴
                 scrollWrapper.classList.remove('open');
                 isOpen = false;
                 
-                // 停止所有音频
                 if (openSound) {
                     openSound.pause();
                     openSound.currentTime = 0;
@@ -194,28 +216,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     bgm.currentTime = 0;
                 }
                 
-                // 停止动画
                 stopImageScroll();
                 
-                // 清除所有定时器
                 poemTimeouts.forEach(t => clearTimeout(t));
                 poemTimeouts = [];
                 
-                // 重置
                 resetPoems();
                 currentPosition = 0;
                 imageContainer.style.transform = 'translateX(0)';
             }
         });
 
-        // 图片滚动动画
         function startImageScroll() {
             const contentWidth = scrollContent.clientWidth;
             const maxScroll = Math.max(0, scaledImageWidth - contentWidth);
             
-            if (maxScroll <= 0) {
-                return;
-            }
+            if (maxScroll <= 0) return;
             
             const duration = TOTAL_DURATION * 1000;
             const pixelsPerSecond = maxScroll / (duration / 1000);
@@ -244,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 诗歌显示
         function revealPoems() {
             const totalColumns = poemColumns.length;
             const totalDuration = TOTAL_DURATION * 1000;
@@ -263,9 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, showTime + 500);
                 poemTimeouts.push(showTimeout);
                 
-                if (column.classList.contains('title-column')) {
-                    return;
-                }
+                if (column.classList.contains('title-column')) return;
                 
                 const fadeDelay = delay + fillCount;
                 const fadeTime = fadeDelay * showInterval;
