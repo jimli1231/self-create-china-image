@@ -19,14 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let loadedCount = 0;
     const totalResources = resources.images.length + resources.audio.length;
+    let isInitialized = false; // 防止重复初始化
     
     function updateProgress() {
         loadedCount++;
         const progress = (loadedCount / totalResources) * 100;
         loadingBar.style.width = progress + '%';
         
-        if (loadedCount >= totalResources) {
+        if (loadedCount >= totalResources && !isInitialized) {
             // 所有资源加载完成
+            isInitialized = true;
             setTimeout(() => {
                 loadingOverlay.classList.add('hidden');
                 mainContainer.classList.add('loaded');
@@ -74,7 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 超时保护：10秒后强制显示
     setTimeout(() => {
-        if (!loadingOverlay.classList.contains('hidden')) {
+        if (!isInitialized) {
+            isInitialized = true;
             loadingOverlay.classList.add('hidden');
             mainContainer.classList.add('loaded');
             initScrollApp();
